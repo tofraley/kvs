@@ -1,19 +1,22 @@
+#![allow(unused_variables)]
+
 pub struct KvStore;
 
 impl KvStore {
   pub fn new() -> KvStore {
-    unimplemented!();
+    KvStore {}
   }
 
   pub fn set(self: &KvStore, key: String, value: String) {
-    unimplemented!();
+    eprintln!("unimplemented");
   }
 
   pub fn get(self: &KvStore, key: String) -> Option<String> {
-    unimplemented!();
+    eprintln!("unimplemented");
+    None
   }
 
   pub fn remove(self: &KvStore, key: String) {
-    unimplemented!();
+    eprintln!("unimplemented");
   }
 }
