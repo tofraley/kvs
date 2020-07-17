@@ -27,21 +27,20 @@ fn cli_get() {
         .args(&["get", "key1"])
         .assert()
         .failure()
-        .stderr(contains("unimplemented"));
+        .stderr(contains("Key not found."));
 }
 
-// `kvs set <KEY> <VALUE>` should print "unimplemented" to stderr and exit with non-zero code
+// `kvs set <KEY> <VALUE>` should succeed
 #[test]
 fn cli_set() {
     Command::cargo_bin("kvs")
         .unwrap()
         .args(&["set", "key1", "value1"])
         .assert()
-        .failure()
-        .stderr(contains("unimplemented"));
+        .success();
 }
 
-// `kvs rm <KEY>` should print "unimplemented" to stderr and exit with non-zero code
+// `kvs rm <KEY>` should print "Key not found." to stderr and exit with non-zero code
 #[test]
 fn cli_rm() {
     Command::cargo_bin("kvs")
@@ -49,7 +48,7 @@ fn cli_rm() {
         .args(&["rm", "key1"])
         .assert()
         .failure()
-        .stderr(contains("unimplemented"));
+        .stderr(contains("Key not found."));
 }
 
 #[test]
@@ -115,31 +114,31 @@ fn cli_invalid_subcommand() {
 // Should get previously stored value
 #[test]
 fn get_stored_value() {
-    let store = KvStore::new();
+    let mut store = KvStore::new();
 
     store.set("key1".to_owned(), "value1".to_owned());
     store.set("key2".to_owned(), "value2".to_owned());
 
-    assert_eq!(store.get("key1".to_owned()), Some("value1".to_owned()));
-    assert_eq!(store.get("key2".to_owned()), Some("value2".to_owned()));
+    assert_eq!(store.get("key1".to_owned()), Some(&"value1".to_owned()));
+    assert_eq!(store.get("key2".to_owned()), Some(&"value2".to_owned()));
 }
 
 // Should overwrite existent value
 #[test]
 fn overwrite_value() {
-    let store = KvStore::new();
+    let mut store = KvStore::new();
 
     store.set("key1".to_owned(), "value1".to_owned());
-    assert_eq!(store.get("key1".to_owned()), Some("value1".to_owned()));
+    assert_eq!(store.get("key1".to_owned()), Some(&"value1".to_owned()));
 
     store.set("key1".to_owned(), "value2".to_owned());
-    assert_eq!(store.get("key1".to_owned()), Some("value2".to_owned()));
+    assert_eq!(store.get("key1".to_owned()), Some(&"value2".to_owned()));
 }
 
 // Should get `None` when getting a non-existent key
 #[test]
 fn get_non_existent_value() {
-    let store = KvStore::new();
+    let mut store = KvStore::new();
 
     store.set("key1".to_owned(), "value1".to_owned());
     assert_eq!(store.get("key2".to_owned()), None);
@@ -147,9 +146,10 @@ fn get_non_existent_value() {
 
 #[test]
 fn remove_key() {
-    let store = KvStore::new();
-
+    let mut store = KvStore::new();
     store.set("key1".to_owned(), "value1".to_owned());
-    store.remove("key1".to_owned());
+
+    assert_eq!(store.get("key1".to_owned()), Some(&"value1".to_owned()));
+    store.remove(&"key1".to_owned());
     assert_eq!(store.get("key1".to_owned()), None);
 }

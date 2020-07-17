@@ -1,29 +1,48 @@
-use structopt::StructOpt;
 use kvs::KvStore;
-use std::process;
-
+use std::io::{Error, ErrorKind};
+use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name="kvs")]
+#[structopt(name = "kvs")]
 enum Opt {
-  Get { key: String },
-  Set { key: String, value: String },
-  Rm { key: String },
+    Get { key: String },
+    Set { key: String, value: String },
+    Rm { key: String },
 }
 
-fn main(){
-  let opt = Opt::from_args();
-  let store = KvStore::new();
-  match opt {
-    Opt::Get { key } => { 
-      store.get(key).unwrap();
-    },
-    Opt::Set { key, value } => {
-      store.set(key, value);
-    },
-    Opt::Rm { key } => {
-      store.remove(key);
+fn main() -> Result<(), Error> {
+    let opt = Opt::from_args();
+    let mut store = KvStore::new();
+    match opt {
+        Opt::Get { key } => match store.get(key) {
+            Some(val) => {
+              println!("{}", val);
+              Ok(())
+            },
+            None => { 
+              eprintln!("Key not found.");
+              Err(Error::from(ErrorKind::Other))
+            }
+        },
+        Opt::Set { key, value } => match store.set(key.clone(), value.clone()) {
+            Some(_) => {
+              println!("Pair updated ({}, {})", key, value);
+              Ok(())
+            },
+            None => {
+              println!("Pair inserted ({}, {})", key, value);
+              Ok(())
+            },
+        },
+        Opt::Rm { key } => match store.remove(&key) {
+            Some(value) => {
+              println!("Pair updated ({}, {})", key, value);
+              Ok(())
+            },
+            None => { 
+              eprintln!("Key not found.");
+              Err(Error::from(ErrorKind::Other))
+            }
+        },
     }
-  }
-  process::exit(1);
 }
